@@ -1,6 +1,7 @@
 package lru
 
 import (
+	"container/list"
 	"encoding/json"
 	"github.com/wuyan94zl/go-cache/byteview"
 	"io"
@@ -23,7 +24,8 @@ func (c *Cache) write() {
 		for {
 			select {
 			case <-ticker.C:
-				D := make(map[string]item)
+				diskMap := make(map[string]item)
+				copyMap := make(map[string]*list.Element)
 				c.wg.Add(1)
 				for k, v := range c.cache {
 					e := v.Value.(*entry)
@@ -31,11 +33,13 @@ func (c *Cache) write() {
 						c.ll.Remove(v)
 						delete(c.cache, e.key)
 					} else {
-						D[k] = item{Key: e.key, Value: e.val.(byteview.ByteView).String(), TTL: e.ttl}
+						diskMap[k] = item{Key: e.key, Value: e.val.(byteview.ByteView).String(), TTL: e.ttl}
+						copyMap[k] = v
 					}
 				}
+				c.cache = copyMap
 				c.wg.Done()
-				res, _ := json.Marshal(D)
+				res, _ := json.Marshal(diskMap)
 				os.Remove(dbFile)
 				f, _ := os.OpenFile(dbFile, os.O_CREATE, 0666)
 				io.WriteString(f, string(res))
