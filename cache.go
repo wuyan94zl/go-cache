@@ -246,13 +246,13 @@ func (g *Group) populateCache(key string, value byteview.ByteView, ttl int64) {
 	g.mainCache.add(key, value, ttl)
 }
 
-func (g *Group) OnlySet(key string, value []byte, ttl int64) (byteview.ByteView, error) {
+func (g *Group) onlySet(key string, value []byte, ttl int64) (byteview.ByteView, error) {
 	v := byteview.ByteView{B: value}
 	g.mainCache.add(key, v, ttl)
 	return v, nil
 }
 
-func (g *Group) OnlyGet(key string) (byteview.ByteView, error) {
+func (g *Group) onlyGet(key string) (byteview.ByteView, error) {
 	if key == "" {
 		return byteview.ByteView{}, fmt.Errorf("key is required")
 	}
@@ -263,7 +263,7 @@ func (g *Group) OnlyGet(key string) (byteview.ByteView, error) {
 	}
 }
 
-func (g *Group) OnlySexNX(key string, value []byte, ttl int64) bool {
+func (g *Group) onlySexNX(key string, value []byte, ttl int64) bool {
 	v := byteview.ByteView{B: value}
 	return g.mainCache.setNx(key, v, ttl)
 }

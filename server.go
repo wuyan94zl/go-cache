@@ -13,7 +13,7 @@ type Cache struct {
 }
 
 func (c *Cache) Set(ctx context.Context, req *cachepb.SetRequest) (*cachepb.Response, error) {
-	v, err := Instance.OnlySet(req.Key, []byte(req.Value), req.Ttl)
+	v, err := Instance.onlySet(req.Key, []byte(req.Value), req.Ttl)
 	if err != nil {
 		return &cachepb.Response{}, err
 	} else {
@@ -22,7 +22,7 @@ func (c *Cache) Set(ctx context.Context, req *cachepb.SetRequest) (*cachepb.Resp
 }
 
 func (c *Cache) SetNX(ctx context.Context, req *cachepb.SetRequest) (*cachepb.SetResponse, error) {
-	if Instance.OnlySexNX(req.Key, []byte(req.Value), req.Ttl) {
+	if Instance.onlySexNX(req.Key, []byte(req.Value), req.Ttl) {
 		return &cachepb.SetResponse{Value: true}, nil
 	} else {
 		return &cachepb.SetResponse{Value: false}, fmt.Errorf("key is exist")
@@ -30,7 +30,7 @@ func (c *Cache) SetNX(ctx context.Context, req *cachepb.SetRequest) (*cachepb.Se
 }
 
 func (c *Cache) Get(ctx context.Context, req *cachepb.Request) (*cachepb.Response, error) {
-	v, err := Instance.OnlyGet(req.Key)
+	v, err := Instance.onlyGet(req.Key)
 	if err != nil {
 		return &cachepb.Response{}, err
 	} else {
