@@ -6,10 +6,22 @@ message Request {
   string key = 1;
 }
 
+message SetRequest {
+  string key = 1;
+  string value = 2;
+  int64  ttl = 3;
+}
+
 message Response {
   bytes value = 1;
 }
 
+message SetResponse {
+  bool value = 1;
+}
+
 service GroupCache {
+  rpc Set(SetRequest) returns (Response);
+  rpc SetNX(SetRequest) returns (SetResponse);
   rpc Get(Request) returns (Response);
 }

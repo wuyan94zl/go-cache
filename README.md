@@ -6,62 +6,60 @@ distributed cache running in project
 #### 安装
 `go get github.com/wuyan94zl/go-cache`
 ***
-#### 单机版使用
+#### 实例化
 ```
-import "github.com/wuyan94zl/go-cache"
-
-func main(){
-    // 实例化单机版缓存
-    cache.Default(nil)
+    // 引入缓存包
+    import "github.com/wuyan94zl/go-cache"
     
-    // 运行web服务
-    http.HandleFunc("/api/cache", myHandler)
-	http.ListenAndServe(":8888", nil)
-}
+    // 实例化单机版缓存服务
+    cache.Default(nil)
 
-func myHandler(res http.ResponseWriter, req *http.Request) {
-	// 定义CallBack 在没有缓存数据时 获取新数据
-	var f cache.CallBack = cache.CallBackFunc(func(key string, params map[string]interface{}) ([]byte, error) {
-	    time.Sleep(5 * time.Second) //模拟耗时操作
-		return json.Marshal("test cache data")
-	})
-	// cache.Instance 为缓存实例 CallBackFunc() 传入定义好的数据来源 Get(key,params,60) key和params为CallBack回调函数参数， 600为缓存时间：600秒
-	// 当key值缓存不存在时调用f()获取数据并写入缓存，存在时直接拉去缓存数据，不会执行f()
-	r, _ := cache.Instance.CallBackFunc(f).Get(key, map[string]interface{}{}, 600)
-	res.Write(r.ByteSlice())
-}
-```
-运行程序 `go run main`  
-多次访问 localhost:8888/api/cache  
-第一次访问会执行5秒，后面再次访问就会很快啦
-***
-### 分布式集群使用
-
-```
-import "github.com/wuyan94zl/go-cache"
-func main(){
-    // 实例化分布式缓存
+    // 实例化分布式版缓存服务
     cache.Default(&cache.Config{
         MaxLen:         100000, // 缓存长度 默认10000
         BackupInterval: 1,      // 缓存备份间隔时间 1分钟备份一次（默认60分钟），备份文件保存在根目录 db 文件中，启动或重启时会自动把备份的db数据同步到内存缓存中
-        // 基于grpc方式交互 的 分布式缓存配置
+        // 远程节点基于grpc方式交互的分布式缓存配置
         Grpc: &cache.GrpcConfig{
-            Port:        "8881",                                       // 当前服务监听端口
-            CurrentHost: "localhost:8881",                             // 当前服务Grpc地址
-            AllHosts:    []string{"localhost:8882", "localhost:8881"}, // 所有服务Grpc地址 直连需要手动配置
+            Port:        "8888",                                       // 当前服务监听端口
+            CurrentHost: "localhost:8888",                             // 当前服务Grpc地址
+            AllHosts:    []string{"localhost:8811", "localhost:8821"}, // 所有服务Grpc地址 直连需要手动配置
         },
     })
-    // 运行web服务省略同上
-}
+    
+    // 操作使用
+    
+    // 设置一个键为test值为value的缓存，60秒后过期
+    cache.Instance.Set("test", "value", 60)
+    
+    // 获取键为test的缓存值
+    cache.Instance.Get("test")
+    
+    // 设置一个键为test_nx值为value的缓存，60秒后过期，返回true。如果键test_nx缓存存在则不操作返回false
+    cache.Instance.SetNX("test_nx", "value", 60)
+    
+    // 获取一个键为cache_key的缓存值，不存在则调用回调函数f()获取数据并添加缓存。存在则直接返回，不会触发f()回调函数
+    var f cache.CallBack = cache.CallBackFunc(func(key string, params map[string]interface{}) ([]byte, error) {
+        return json.Marshal("cache write data")
+    })
+    // 回调函数的参数对应Cache函数的key,map[string]interface{}{}
+    cache.Instance.CallBackFunc(f).Cache("cache_key", map[string]interface{}{}, 600)
 ```
 
+### 项目中使用
 
-8881 和 8882 为2个程序缓存的相关节点信息  
-在程序1 或 程序2 中调用 cache.Instance.CallBackFunc(f).Get(key, map[string]interface{}{}, 600)
-程序会根据key值 计算出相应的缓存节点
-如果是本节点缓存，直接获取程序内存缓存数据，缓存不存在，调用回调获取数据并写入本节点缓存。
-如果非本节点缓存，根据节点远程获取缓存数据，缓存不存在，调用回调获取数据并写入本节点缓存，10秒过期（）。
-  
+#### 单机版
 
+[单机版示例](/example/single.go)
 
-```
+#### 分布式版
+
+[分布式版示例1](/example/cluster1.go)
+
+[分布式版示例2](/example/cluster2.go)
+
+[分布式版示例3](/example/cluster3.go)
+
+3个示例仅 `rpcPort, httpPort := "8811", ":8810"` 端口不同  
+保证 AllHosts 列表一致且包含所有的缓存节点信息
+
+***

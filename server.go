@@ -2,13 +2,31 @@ package cache
 
 import (
 	"context"
+	"fmt"
+	"github.com/wuyan94zl/go-cache/proto"
 	"google.golang.org/grpc"
 	"log"
 	"net"
-	"github.com/wuyan94zl/go-cache/proto"
 )
 
 type Cache struct {
+}
+
+func (c *Cache) Set(ctx context.Context, req *cachepb.SetRequest) (*cachepb.Response, error) {
+	v, err := Instance.OnlySet(req.Key, []byte(req.Value), req.Ttl)
+	if err != nil {
+		return &cachepb.Response{}, err
+	} else {
+		return &cachepb.Response{Value: v.B}, err
+	}
+}
+
+func (c *Cache) SetNX(ctx context.Context, req *cachepb.SetRequest) (*cachepb.SetResponse, error) {
+	if Instance.OnlySexNX(req.Key, []byte(req.Value), req.Ttl) {
+		return &cachepb.SetResponse{Value: true}, nil
+	} else {
+		return &cachepb.SetResponse{Value: false}, fmt.Errorf("key is exist")
+	}
 }
 
 func (c *Cache) Get(ctx context.Context, req *cachepb.Request) (*cachepb.Response, error) {

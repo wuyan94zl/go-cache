@@ -2,8 +2,8 @@ package cache
 
 import (
 	"context"
-	"google.golang.org/grpc"
 	"github.com/wuyan94zl/go-cache/proto"
+	"google.golang.org/grpc"
 )
 
 type defaultClient struct {
@@ -19,4 +19,14 @@ func NewClient(cli *grpc.ClientConn) *defaultClient {
 func (d *defaultClient) Get(ctx context.Context, request *cachepb.Request) (*cachepb.Response, error) {
 	cli := cachepb.NewGroupCacheClient(d.conn)
 	return cli.Get(ctx, request)
+}
+
+func (d *defaultClient) Set(ctx context.Context, request *cachepb.SetRequest) (*cachepb.Response, error) {
+	cli := cachepb.NewGroupCacheClient(d.conn)
+	return cli.Set(ctx, request)
+}
+
+func (d *defaultClient) SetNX(ctx context.Context, request *cachepb.SetRequest) (*cachepb.SetResponse, error) {
+	cli := cachepb.NewGroupCacheClient(d.conn)
+	return cli.SetNX(ctx, request)
 }

@@ -63,6 +63,61 @@ func (m *Request) GetKey() string {
 	return ""
 }
 
+type SetRequest struct {
+	Key                  string   `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	Value                string   `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
+	Ttl                  int64    `protobuf:"varint,3,opt,name=ttl,proto3" json:"ttl,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SetRequest) Reset()         { *m = SetRequest{} }
+func (m *SetRequest) String() string { return proto.CompactTextString(m) }
+func (*SetRequest) ProtoMessage()    {}
+func (*SetRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_65b4d2f9fe4de76d, []int{1}
+}
+
+func (m *SetRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SetRequest.Unmarshal(m, b)
+}
+func (m *SetRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SetRequest.Marshal(b, m, deterministic)
+}
+func (m *SetRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SetRequest.Merge(m, src)
+}
+func (m *SetRequest) XXX_Size() int {
+	return xxx_messageInfo_SetRequest.Size(m)
+}
+func (m *SetRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_SetRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SetRequest proto.InternalMessageInfo
+
+func (m *SetRequest) GetKey() string {
+	if m != nil {
+		return m.Key
+	}
+	return ""
+}
+
+func (m *SetRequest) GetValue() string {
+	if m != nil {
+		return m.Value
+	}
+	return ""
+}
+
+func (m *SetRequest) GetTtl() int64 {
+	if m != nil {
+		return m.Ttl
+	}
+	return 0
+}
+
 type Response struct {
 	Value                []byte   `protobuf:"bytes,1,opt,name=value,proto3" json:"value,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -74,7 +129,7 @@ func (m *Response) Reset()         { *m = Response{} }
 func (m *Response) String() string { return proto.CompactTextString(m) }
 func (*Response) ProtoMessage()    {}
 func (*Response) Descriptor() ([]byte, []int) {
-	return fileDescriptor_65b4d2f9fe4de76d, []int{1}
+	return fileDescriptor_65b4d2f9fe4de76d, []int{2}
 }
 
 func (m *Response) XXX_Unmarshal(b []byte) error {
@@ -102,24 +157,69 @@ func (m *Response) GetValue() []byte {
 	return nil
 }
 
+type SetResponse struct {
+	Value                bool     `protobuf:"varint,1,opt,name=value,proto3" json:"value,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SetResponse) Reset()         { *m = SetResponse{} }
+func (m *SetResponse) String() string { return proto.CompactTextString(m) }
+func (*SetResponse) ProtoMessage()    {}
+func (*SetResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_65b4d2f9fe4de76d, []int{3}
+}
+
+func (m *SetResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SetResponse.Unmarshal(m, b)
+}
+func (m *SetResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SetResponse.Marshal(b, m, deterministic)
+}
+func (m *SetResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SetResponse.Merge(m, src)
+}
+func (m *SetResponse) XXX_Size() int {
+	return xxx_messageInfo_SetResponse.Size(m)
+}
+func (m *SetResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_SetResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SetResponse proto.InternalMessageInfo
+
+func (m *SetResponse) GetValue() bool {
+	if m != nil {
+		return m.Value
+	}
+	return false
+}
+
 func init() {
 	proto.RegisterType((*Request)(nil), "cachepb.Request")
+	proto.RegisterType((*SetRequest)(nil), "cachepb.SetRequest")
 	proto.RegisterType((*Response)(nil), "cachepb.Response")
+	proto.RegisterType((*SetResponse)(nil), "cachepb.SetResponse")
 }
 
 func init() { proto.RegisterFile("cachepb.proto", fileDescriptor_65b4d2f9fe4de76d) }
 
 var fileDescriptor_65b4d2f9fe4de76d = []byte{
-	// 134 bytes of a gzipped FileDescriptorProto
+	// 205 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x4d, 0x4e, 0x4c, 0xce,
 	0x48, 0x2d, 0x48, 0xd2, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x87, 0x72, 0x95, 0xa4, 0xb9,
 	0xd8, 0x83, 0x52, 0x0b, 0x4b, 0x53, 0x8b, 0x4b, 0x84, 0x04, 0xb8, 0x98, 0xb3, 0x53, 0x2b, 0x25,
-	0x18, 0x15, 0x18, 0x35, 0x38, 0x83, 0x40, 0x4c, 0x25, 0x05, 0x2e, 0x8e, 0xa0, 0xd4, 0xe2, 0x82,
-	0xfc, 0xbc, 0xe2, 0x54, 0x21, 0x11, 0x2e, 0xd6, 0xb2, 0xc4, 0x9c, 0xd2, 0x54, 0xb0, 0x3c, 0x4f,
-	0x10, 0x84, 0x63, 0x64, 0xc1, 0xc5, 0xe5, 0x5e, 0x94, 0x5f, 0x5a, 0xe0, 0x0c, 0x32, 0x4e, 0x48,
-	0x8b, 0x8b, 0xd9, 0x3d, 0xb5, 0x44, 0x48, 0x40, 0x0f, 0x66, 0x19, 0xd4, 0x68, 0x29, 0x41, 0x24,
-	0x11, 0x88, 0x79, 0x49, 0x6c, 0x60, 0x87, 0x18, 0x03, 0x02, 0x00, 0x00, 0xff, 0xff, 0x74, 0x3a,
-	0x32, 0xff, 0x99, 0x00, 0x00, 0x00,
+	0x18, 0x15, 0x18, 0x35, 0x38, 0x83, 0x40, 0x4c, 0x25, 0x37, 0x2e, 0xae, 0xe0, 0xd4, 0x12, 0x9c,
+	0xf2, 0x42, 0x22, 0x5c, 0xac, 0x65, 0x89, 0x39, 0xa5, 0xa9, 0x12, 0x4c, 0x60, 0x31, 0x08, 0x07,
+	0xa4, 0xae, 0xa4, 0x24, 0x47, 0x82, 0x59, 0x81, 0x51, 0x83, 0x39, 0x08, 0xc4, 0x54, 0x52, 0xe0,
+	0xe2, 0x08, 0x4a, 0x2d, 0x2e, 0xc8, 0xcf, 0x2b, 0x4e, 0x45, 0xe8, 0x01, 0x99, 0xc3, 0x03, 0xd5,
+	0xa3, 0xa4, 0xcc, 0xc5, 0x0d, 0xb6, 0x09, 0x9b, 0x22, 0x0e, 0xa8, 0x22, 0xa3, 0xd9, 0x8c, 0x5c,
+	0x5c, 0xee, 0x45, 0xf9, 0xa5, 0x05, 0xce, 0x20, 0xc7, 0x0b, 0xe9, 0x72, 0x31, 0x07, 0xa7, 0x96,
+	0x08, 0x09, 0xeb, 0xc1, 0xbc, 0x86, 0x70, 0xab, 0x94, 0x20, 0x5c, 0x10, 0x6e, 0xa6, 0x11, 0x17,
+	0x6b, 0x70, 0x6a, 0x89, 0x5f, 0x04, 0x76, 0x0d, 0x22, 0xa8, 0x82, 0x50, 0x3d, 0x5a, 0x5c, 0xcc,
+	0xee, 0xa9, 0x25, 0x42, 0x02, 0x48, 0xa6, 0xe1, 0x32, 0x3f, 0x89, 0x0d, 0x1c, 0xb2, 0xc6, 0x80,
+	0x00, 0x00, 0x00, 0xff, 0xff, 0xf5, 0x50, 0x1f, 0x59, 0x6a, 0x01, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -134,6 +234,8 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type GroupCacheClient interface {
+	Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*Response, error)
+	SetNX(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*SetResponse, error)
 	Get(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
 }
 
@@ -143,6 +245,24 @@ type groupCacheClient struct {
 
 func NewGroupCacheClient(cc *grpc.ClientConn) GroupCacheClient {
 	return &groupCacheClient{cc}
+}
+
+func (c *groupCacheClient) Set(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := c.cc.Invoke(ctx, "/cachepb.GroupCache/Set", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *groupCacheClient) SetNX(ctx context.Context, in *SetRequest, opts ...grpc.CallOption) (*SetResponse, error) {
+	out := new(SetResponse)
+	err := c.cc.Invoke(ctx, "/cachepb.GroupCache/SetNX", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *groupCacheClient) Get(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
@@ -156,6 +276,8 @@ func (c *groupCacheClient) Get(ctx context.Context, in *Request, opts ...grpc.Ca
 
 // GroupCacheServer is the server API for GroupCache service.
 type GroupCacheServer interface {
+	Set(context.Context, *SetRequest) (*Response, error)
+	SetNX(context.Context, *SetRequest) (*SetResponse, error)
 	Get(context.Context, *Request) (*Response, error)
 }
 
@@ -163,12 +285,54 @@ type GroupCacheServer interface {
 type UnimplementedGroupCacheServer struct {
 }
 
+func (*UnimplementedGroupCacheServer) Set(ctx context.Context, req *SetRequest) (*Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Set not implemented")
+}
+func (*UnimplementedGroupCacheServer) SetNX(ctx context.Context, req *SetRequest) (*SetResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetNX not implemented")
+}
 func (*UnimplementedGroupCacheServer) Get(ctx context.Context, req *Request) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
 }
 
 func RegisterGroupCacheServer(s *grpc.Server, srv GroupCacheServer) {
 	s.RegisterService(&_GroupCache_serviceDesc, srv)
+}
+
+func _GroupCache_Set_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GroupCacheServer).Set(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/cachepb.GroupCache/Set",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GroupCacheServer).Set(ctx, req.(*SetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GroupCache_SetNX_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GroupCacheServer).SetNX(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/cachepb.GroupCache/SetNX",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GroupCacheServer).SetNX(ctx, req.(*SetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _GroupCache_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -193,6 +357,14 @@ var _GroupCache_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "cachepb.GroupCache",
 	HandlerType: (*GroupCacheServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Set",
+			Handler:    _GroupCache_Set_Handler,
+		},
+		{
+			MethodName: "SetNX",
+			Handler:    _GroupCache_SetNX_Handler,
+		},
 		{
 			MethodName: "Get",
 			Handler:    _GroupCache_Get_Handler,

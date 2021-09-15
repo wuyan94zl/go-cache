@@ -10,7 +10,6 @@ import (
 	"github.com/wuyan94zl/go-cache/singleflight"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/balancer/roundrobin"
-	"log"
 	"sync"
 )
 
@@ -35,10 +34,23 @@ func (c *cache) get(key string) (value byteview.ByteView, ok bool) {
 		panic("lru is nil")
 	}
 	if v, ok := c.lru.Get(key); ok {
-		log.Println(key + " cache hit")
 		return v.(byteview.ByteView), ok
 	}
 	return
+}
+
+func (c *cache) setNx(key string, value byteview.ByteView, ttl int64) bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.lru == nil {
+		panic("lru is nil")
+	}
+	if _, ok := c.lru.Get(key); ok {
+		return false
+	} else {
+		c.lru.Add(key, value, ttl)
+		return true
+	}
 }
 
 type CallBack interface {
@@ -101,12 +113,48 @@ func (g *Group) init(c *Config) {
 	}
 }
 
+func (g *Group) Set(key string, value string, ttl int64) bool {
+	if url, ok := g.isLocal(key); !ok {
+		return g.grpcSetData(url, key, []byte(value), ttl)
+	} else {
+		g.mainCache.add(key, byteview.ByteView{B: []byte(value)}, ttl)
+		return true
+	}
+}
+
+func (g *Group) Get(key string) ([]byte, error) {
+	var bytes []byte
+	var err error
+	if url, ok := g.isLocal(key); !ok {
+		if bytes, err = g.grpcGetData(url, key); err == nil {
+			return bytes, err
+		} else {
+			return nil, err
+		}
+	} else {
+		val, err := g.mainCache.get(key)
+		if err {
+			return val.B, nil
+		} else {
+			return nil, fmt.Errorf("key is not exist")
+		}
+	}
+}
+
+func (g *Group) SetNX(key string, value string, ttl int64) bool {
+	if url, ok := g.isLocal(key); !ok {
+		return g.grpcSetNXData(url, key, []byte(value), ttl)
+	} else {
+		return g.mainCache.setNx(key, byteview.ByteView{B: []byte(value)}, ttl)
+	}
+}
+
 func (g *Group) CallBackFunc(callback CallBack) *Group {
 	g.callback = callback
 	return g
 }
 
-func (g *Group) Get(key string, params map[string]interface{}, ttl int64) (byteview.ByteView, error) {
+func (g *Group) Cache(key string, params map[string]interface{}, ttl int64) (byteview.ByteView, error) {
 	if key == "" {
 		return byteview.ByteView{}, fmt.Errorf("key is required")
 	}
@@ -128,7 +176,7 @@ func (g *Group) getLocally(key string, params map[string]interface{}, ttl int64)
 	var err error
 
 	if url, ok := g.isLocal(key); !ok {
-		if bytes, err = g.grpcGetData(key, url); err == nil {
+		if bytes, err = g.grpcGetData(url, key); err == nil {
 			return byteview.ByteView{B: bytes}, nil
 		}
 	}
@@ -155,7 +203,7 @@ func (g *Group) isLocal(key string) (string, bool) {
 	return url, false
 }
 
-func (g *Group) grpcGetData(key string, url string) ([]byte, error) {
+func (g *Group) grpcGetData(url string, key string) ([]byte, error) {
 	conn, err := grpc.Dial(url, grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, roundrobin.Name)), grpc.WithInsecure())
 	if err != nil {
 		return nil, fmt.Errorf("连接服务器失败:%v", err)
@@ -168,8 +216,40 @@ func (g *Group) grpcGetData(key string, url string) ([]byte, error) {
 	return res.Value, nil
 }
 
+func (g *Group) grpcSetData(url string, key string, value []byte, ttl int64) bool {
+	conn, err := grpc.Dial(url, grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, roundrobin.Name)), grpc.WithInsecure())
+	if err != nil {
+		return false
+	}
+	cli := NewClient(conn)
+	_, err = cli.Set(context.Background(), &cachepb.SetRequest{Key: key, Value: string(value), Ttl: ttl})
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+func (g *Group) grpcSetNXData(url string, key string, value []byte, ttl int64) bool {
+	conn, err := grpc.Dial(url, grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, roundrobin.Name)), grpc.WithInsecure())
+	if err != nil {
+		return false
+	}
+	cli := NewClient(conn)
+	_, err = cli.SetNX(context.Background(), &cachepb.SetRequest{Key: key, Value: string(value), Ttl: ttl})
+	if err != nil {
+		return false
+	}
+	return true
+}
+
 func (g *Group) populateCache(key string, value byteview.ByteView, ttl int64) {
 	g.mainCache.add(key, value, ttl)
+}
+
+func (g *Group) OnlySet(key string, value []byte, ttl int64) (byteview.ByteView, error) {
+	v := byteview.ByteView{B: value}
+	g.mainCache.add(key, v, ttl)
+	return v, nil
 }
 
 func (g *Group) OnlyGet(key string) (byteview.ByteView, error) {
@@ -181,4 +261,9 @@ func (g *Group) OnlyGet(key string) (byteview.ByteView, error) {
 	} else {
 		return byteview.ByteView{}, fmt.Errorf("key is not exist")
 	}
+}
+
+func (g *Group) OnlySexNX(key string, value []byte, ttl int64) bool {
+	v := byteview.ByteView{B: value}
+	return g.mainCache.setNx(key, v, ttl)
 }
