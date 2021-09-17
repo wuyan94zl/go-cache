@@ -40,25 +40,35 @@ func TestSetGet(t *testing.T) {
 	Instance.Set("set_key", "set_value", 1)
 	time.Sleep(2 * time.Second)
 	if _, err := Instance.Get("set_key"); err == nil {
-		t.Fatalf("set_key 不存在 却返回数据")
+		t.Fatalf("set_key Should be expired")
 	}
 	Instance.Set("set_key", "set_value", 1)
 	if _, err := Instance.Get("set_key"); err != nil {
-		t.Fatalf("set_key 存在 却无返回数据")
+		t.Fatalf("set_key Should be existed")
 	}
-	log.Println("set get test pass")
 }
 
 func TestSetNX(t *testing.T) {
 	wg := sync.WaitGroup{}
+	setNxOk := 0
+	setNxErr := 0
 	// setNX 并发测试
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
 		go func(i int, wg *sync.WaitGroup) {
-			log.Println("setNX 并发测试：", i, Instance.SetNX("keyNx", "1", 10))
+			if Instance.SetNX("keyNx", "1", 10) {
+				setNxOk++
+			}else{
+				setNxErr++
+			}
 			wg.Done()
 		}(i, &wg)
 	}
 	wg.Wait()
-	log.Println("setNX test pass")
+	if setNxOk != 1{
+		t.Fatalf("setNxOk vaule err, It should be 1 but it's missing %v",setNxOk)
+	}
+	if setNxErr != 9{
+		t.Fatalf("setNxErr vaule err, It should be 9 but it's missing %v",setNxErr)
+	}
 }
